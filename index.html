@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#A0D8F3">
+    <meta name="description" content="Bible Quiz Blitz — quick Bible question flash cards.">
+    <title>Bible Quiz Blitz</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./quiz.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#quiz-panel">Skip to question</a>
+    <header class="site-header">
+      <a class="brand" id="brand-home" href="./" aria-label="Bible Quiz Blitz home">
+        <span class="brand-mark" aria-hidden="true"><img src="./icon.svg" alt=""></span>
+        <span>Bible Quiz <span class="brand-accent">Blitz</span></span>
+      </a>
+      <div class="header-actions">
+        <button class="button button-quiet install-button" id="install-button" type="button" hidden>Install app</button>
+        <div class="menu-wrap">
+          <button class="menu-button" id="menu-button" type="button" aria-label="Open app menu" aria-haspopup="true" aria-expanded="false" aria-controls="app-menu">
+            <span aria-hidden="true">⋮</span>
+          </button>
+          <div class="app-menu" id="app-menu" hidden>
+            <button type="button" data-panel="setup-panel">Study settings</button>
+            <button type="button" data-panel="history-panel">Practice history</button>
+            <div class="theme-setting">
+              <span>Appearance</span>
+              <div class="theme-toggles" role="group" aria-label="Color theme">
+                <button class="theme-toggle" type="button" data-theme-choice="system" aria-label="Use system appearance" aria-pressed="true">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="2"></rect><path d="M8 20h8m-4-3.5V20"></path></svg>
+                </button>
+                <button class="theme-toggle" type="button" data-theme-choice="light" aria-label="Use light appearance" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2.5v2m0 15v2m9.5-9.5h-2m-15 0h-2m16.2-6.2-1.4 1.4m-10.6 10.6-1.4 1.4m13.4 0-1.4-1.4M6.7 6.7 5.3 5.3"></path></svg>
+                </button>
+                <button class="theme-toggle" type="button" data-theme-choice="dark" aria-label="Use dark appearance" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 15.2A8 8 0 0 1 8.8 4.5 8.5 8.5 0 1 0 19.5 15.2Z"></path></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="panel setup-panel" id="setup-panel" aria-labelledby="setup-title" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Your next study session</p>
+            <h2 id="setup-title">Set up your quiz</h2>
+          </div>
+          <span class="chapter-stamp" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 7.2c-2-1.6-4.7-2.2-8-1.8v12c3.3-.4 6 .2 8 1.8m0-12c2-1.6 4.7-2.2 8-1.8v12c-3.3-.4-6 .2-8 1.8m0-12v12"></path><path d="M6.5 9.2c1.7 0 3.2.3 4.5 1m7-1c-1.7 0-3.2.3-4.5 1"></path></svg>
+          </span>
+        </div>
+        <form id="setup-form">
+          <div class="form-grid">
+            <label class="field">
+              <span class="field-label">Study year</span>
+              <select id="year-select" name="year" required>
+                <option value="">Loading study years…</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Chapter</span>
+              <select id="chapter-select" name="chapter" required></select>
+            </label>
+          </div>
+          <div class="form-grid filter-grid">
+            <label class="field">
+              <span class="field-label">Week</span>
+              <select id="week-select" name="week" disabled>
+                <option value="">Weeks not assigned yet</option>
+              </select>
+            </label>
+            <label class="prior-option">
+              <input id="include-prior" name="includePrior" type="checkbox">
+              <span class="check-mark" aria-hidden="true"></span>
+              <span>Include all prior chapters / weeks</span>
+            </label>
+          </div>
+          <p class="field-help week-help" id="week-help">Week dates are not present in the supplied files yet.</p>
+
+          <fieldset class="field-group">
+            <legend>Question types</legend>
+            <div class="choice-row" id="type-filters">
+              <label class="check-card">
+                <input type="checkbox" name="type" value="regular" checked>
+                <span class="check-mark" aria-hidden="true"></span>
+                <span><strong>Questions</strong><small>Regular review</small></span>
+              </label>
+              <label class="check-card">
+                <input type="checkbox" name="type" value="footnote" checked>
+                <span class="check-mark" aria-hidden="true"></span>
+                <span><strong>FQs</strong><small>Footnote questions</small></span>
+              </label>
+              <label class="check-card">
+                <input type="checkbox" name="type" value="situation" checked>
+                <span class="check-mark" aria-hidden="true"></span>
+                <span><strong>Sit Qs</strong><small>Situation questions</small></span>
+              </label>
+            </div>
+            <p class="field-help" id="available-count" aria-live="polite"></p>
+          </fieldset>
+
+          <fieldset class="field-group">
+            <legend>Session goal</legend>
+            <div class="mode-switch">
+              <label><input type="radio" name="mode" value="count" checked><span>Question count</span></label>
+              <label><input type="radio" name="mode" value="timed"><span>Timed practice</span></label>
+            </div>
+            <div class="form-grid goal-fields">
+              <label class="field" id="count-field">
+                <span class="field-label">Number of questions</span>
+                <select id="question-count" name="questionCount">
+                  <option value="5">5 questions</option>
+                  <option value="10" selected>10 questions</option>
+                  <option value="15">15 questions</option>
+                  <option value="25">25 questions</option>
+                  <option value="50">50 questions</option>
+                  <option value="100">100 questions</option>
+                </select>
+              </label>
+              <label class="field" id="duration-field" hidden>
+                <span class="field-label">Time limit in minutes</span>
+                <select id="duration-minutes" name="duration" disabled>
+                  <option value="5">5 minutes</option>
+                  <option value="10">10 minutes</option>
+                  <option value="15">15 minutes</option>
+                  <option value="30">30 minutes</option>
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
+          <p class="form-message" id="form-message" role="status"></p>
+          <button class="button button-primary start-button" type="submit">Apply settings &amp; start <span aria-hidden="true">→</span></button>
+        </form>
+      </section>
+
+      <section class="panel quiz-panel" id="quiz-panel" aria-labelledby="quiz-heading" hidden>
+        <div class="quiz-topline">
+          <span class="session-scope" id="session-scope"></span>
+          <div class="session-progress">
+            <span id="session-mode-label"></span>
+            <strong id="session-progress"></strong>
+          </div>
+        </div>
+        <div class="timer-wrap" id="timer-wrap" hidden>
+          <div class="timer-label"><span>Time remaining</span><strong id="timer-display" role="timer" aria-live="off"></strong></div>
+          <div class="timer-track" role="progressbar" id="timer-progress" aria-label="Time remaining" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <span id="timer-bar"></span>
+          </div>
+        </div>
+        <article class="flashcard" aria-live="polite">
+          <h2 id="quiz-heading"></h2>
+          <div class="answer-area" id="answer-area" hidden>
+            <p class="answer-label">Answer</p>
+            <p class="answer-text" id="answer-text"></p>
+          </div>
+          <div class="card-actions">
+            <a class="button button-secondary" id="verse-link" href="#" target="_blank" rel="noopener noreferrer">Open chapter <span aria-hidden="true">↗</span></a>
+            <button class="button button-primary" id="reveal-button" type="button">Reveal answer</button>
+            <button class="button button-primary" id="next-button" type="button" hidden>Next question <span aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <p class="keyboard-hint">Press space to reveal the answer or continue.</p>
+      </section>
+
+      <section class="panel result-panel" id="result-panel" aria-labelledby="result-title" hidden>
+        <p class="eyebrow">Session complete</p>
+        <h2 id="result-title" tabindex="-1">Well done.</h2>
+        <p class="result-summary" id="result-summary"></p>
+        <p class="result-duration" id="result-duration"></p>
+        <p class="high-score-note" id="high-score-note" hidden></p>
+        <p class="save-message" id="save-message" role="status"></p>
+        <div class="result-actions">
+          <button class="button button-primary" id="restart-button" type="button">Start another session</button>
+          <button class="button button-primary" id="again-button" type="button">Change study settings</button>
+        </div>
+      </section>
+
+      <section class="panel history-panel" id="history-panel" aria-labelledby="history-title" hidden>
+        <div class="section-heading history-heading">
+          <div>
+            <p class="eyebrow">Just for you</p>
+            <h2 id="history-title">Your practice</h2>
+          </div>
+          <span class="history-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 7.2c-2-1.6-4.7-2.2-8-1.8v12c3.3-.4 6 .2 8 1.8m0-12c2-1.6 4.7-2.2 8-1.8v12c-3.3-.4-6 .2-8 1.8m0-12v12"></path><path d="M6.5 9.2c1.7 0 3.2.3 4.5 1m7-1c-1.7 0-3.2.3-4.5 1"></path></svg>
+          </span>
+        </div>
+        <div class="history-stats">
+          <div><span class="stat-value" id="sessions-total">0</span><span class="stat-label">sessions</span></div>
+          <div><span class="stat-value" id="questions-total">0</span><span class="stat-label">questions practiced</span></div>
+          <div><span class="stat-value" id="timed-best">—</span><span class="stat-label">best timed score</span></div>
+        </div>
+        <ol class="history-list" id="history-list"></ol>
+        <p class="history-empty" id="history-empty">Your completed sessions will appear here on this device.</p>
+        <p class="privacy-note">Your history stays in this browser on this device.</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Bible Quiz Blitz</span>
+      <span>Quick recall. Steady growth.</span>
+    </footer>
+    <script src="./app.js"></script>
+  </body>
+</html>
