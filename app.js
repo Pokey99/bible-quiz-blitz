@@ -295,11 +295,7 @@
       elements.weekSelect.value = currentOption && !currentOption.disabled ? currentWeek : '';
     }
     elements.weekSelect.disabled = false;
-    const unavailableWeeks = weeks.filter((week) => !week.available);
-    const notImplemented = unavailableWeeks.length
-      ? ` Weeks ${unavailableWeeks.map((week) => week.week).join(', ')} are not implemented yet.`
-      : '';
-    elements.weekHelp.textContent = `Choose a week and/or chapter to narrow the cards. Earlier material can be included when using one filter alone.${notImplemented}`;
+    elements.weekHelp.textContent = `Choose a week and/or chapter to narrow the cards. Earlier material can be included when using one filter alone.`;
     updatePriorOptions();
   }
 
