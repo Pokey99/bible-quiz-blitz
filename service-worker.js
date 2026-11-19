@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bible-quiz-blitz-v5';
+const CACHE_NAME = 'bible-quiz-blitz-v6';
 const APP_FILES = [
   './',
   './index.html',

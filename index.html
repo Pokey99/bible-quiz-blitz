@@ -65,24 +65,31 @@
               </select>
             </label>
             <label class="field">
-              <span class="field-label">Chapter</span>
-              <select id="chapter-select" name="chapter" required></select>
+              <span class="field-label">Week</span>
+              <select id="week-select" name="week" disabled>
+                <option value="">Weeks not defined for this year</option>
+              </select>
             </label>
           </div>
           <div class="form-grid filter-grid">
             <label class="field">
-              <span class="field-label">Week</span>
-              <select id="week-select" name="week" disabled>
-                <option value="">Weeks not assigned yet</option>
-              </select>
-            </label>
-            <label class="prior-option">
-              <input id="include-prior" name="includePrior" type="checkbox">
-              <span class="check-mark" aria-hidden="true"></span>
-              <span>Include all prior chapters / weeks</span>
+              <span class="field-label">Chapter</span>
+              <select id="chapter-select" name="chapter" required></select>
             </label>
           </div>
-          <p class="field-help week-help" id="week-help">Week dates are not present in the supplied files yet.</p>
+          <div class="prior-options" id="prior-options">
+            <label class="prior-option" id="prior-chapters-option" hidden>
+              <input id="include-prior-chapters" name="includePriorChapters" type="checkbox">
+              <span class="check-mark" aria-hidden="true"></span>
+              <span>Include all prior chapters</span>
+            </label>
+            <label class="prior-option" id="prior-weeks-option" hidden>
+              <input id="include-prior-weeks" name="includePriorWeeks" type="checkbox">
+              <span class="check-mark" aria-hidden="true"></span>
+              <span>Include all prior weeks</span>
+            </label>
+          </div>
+          <p class="field-help week-help" id="week-help">Week ranges have not been defined for this study year.</p>
 
           <fieldset class="field-group">
             <legend>Question types</legend>
@@ -206,7 +213,7 @@
 
     <footer class="site-footer">
       <span>Bible Quiz Blitz</span>
-      <span>Quick recall. Steady growth.</span>
+      <span>Know God's word. Know God.</span>
     </footer>
     <script src="./app.js"></script>
   </body>
