@@ -65,21 +65,28 @@
               </select>
             </label>
             <label class="field">
-              <span class="field-label">Chapter</span>
-              <select id="chapter-select" name="chapter" required></select>
-            </label>
-          </div>
-          <div class="form-grid filter-grid">
-            <label class="field">
               <span class="field-label">Week</span>
               <select id="week-select" name="week" disabled>
                 <option value="">Weeks not defined for this year</option>
               </select>
             </label>
-            <label class="prior-option">
-              <input id="include-prior" name="includePrior" type="checkbox">
+          </div>
+          <div class="form-grid filter-grid">
+            <label class="field">
+              <span class="field-label">Chapter</span>
+              <select id="chapter-select" name="chapter" required></select>
+            </label>
+          </div>
+          <div class="prior-options" id="prior-options">
+            <label class="prior-option" id="prior-chapters-option" hidden>
+              <input id="include-prior-chapters" name="includePriorChapters" type="checkbox">
               <span class="check-mark" aria-hidden="true"></span>
-              <span>Include all prior chapters / weeks</span>
+              <span>Include all prior chapters</span>
+            </label>
+            <label class="prior-option" id="prior-weeks-option" hidden>
+              <input id="include-prior-weeks" name="includePriorWeeks" type="checkbox">
+              <span class="check-mark" aria-hidden="true"></span>
+              <span>Include all prior weeks</span>
             </label>
           </div>
           <p class="field-help week-help" id="week-help">Week ranges have not been defined for this study year.</p>

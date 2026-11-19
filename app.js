@@ -31,7 +31,11 @@
     chapterSelect: document.getElementById('chapter-select'),
     weekSelect: document.getElementById('week-select'),
     weekHelp: document.getElementById('week-help'),
-    includePrior: document.getElementById('include-prior'),
+    priorOptions: document.getElementById('prior-options'),
+    priorChaptersOption: document.getElementById('prior-chapters-option'),
+    priorWeeksOption: document.getElementById('prior-weeks-option'),
+    includePriorChapters: document.getElementById('include-prior-chapters'),
+    includePriorWeeks: document.getElementById('include-prior-weeks'),
     countInput: document.getElementById('question-count'),
     durationInput: document.getElementById('duration-minutes'),
     countField: document.getElementById('count-field'),
@@ -169,14 +173,26 @@
     return `${entry.year} · Week ${entry.week} · ${entry.label}${entry.available ? '' : ' (questions not added yet)'}`;
   }
 
+  function weekContainsChapter(week, chapterKey) {
+    if (chapterKey === 'all') return true;
+    return questions.some((question) => question.year === week.year
+      && `${question.book}:${question.chapter}` === chapterKey
+      && questionInWeek(question, week));
+  }
+
   function selectedQuestions() {
     const year = selectedYear();
     const chapterKey = elements.chapterSelect.value;
-    const prior = elements.includePrior.checked;
     const selectedWeek = elements.weekSelect.value;
+    const includePriorChapters = chapterKey !== 'all'
+      && !selectedWeek
+      && elements.includePriorChapters.checked;
+    const includePriorWeeks = chapterKey === 'all'
+      && Boolean(selectedWeek)
+      && elements.includePriorWeeks.checked;
     const types = selectedTypes();
     const includedChapters = new Map();
-    if (chapterKey !== 'all' && prior) {
+    if (includePriorChapters) {
       const years = year === null ? [...new Set(questions.map((question) => question.year))] : [year];
       years.forEach((chapterYear) => {
         const keys = chapterKeys(chapterYear);
@@ -187,14 +203,14 @@
     const weeks = weekEntries(year);
     const selectedWeekIndex = weeks.findIndex((entry) => entry.key === selectedWeek);
     const includedWeeks = selectedWeekIndex >= 0
-      ? (prior ? weeks.slice(0, selectedWeekIndex + 1) : [weeks[selectedWeekIndex]])
+      ? (includePriorWeeks ? weeks.slice(0, selectedWeekIndex + 1) : [weeks[selectedWeekIndex]])
       : [];
 
     return questions.filter((question) => {
       if ((year !== null && question.year !== year) || !types.includes(question.type)) return false;
       const questionChapterKey = `${question.book}:${question.chapter}`;
       if (chapterKey !== 'all') {
-        const allowed = prior
+        const allowed = includePriorChapters
           ? includedChapters.get(question.year)
           : new Set([chapterKey]);
         if (!allowed || !allowed.has(questionChapterKey)) return false;
@@ -259,24 +275,44 @@
       elements.weekSelect.replaceChildren(unavailable);
       elements.weekSelect.disabled = true;
       elements.weekHelp.textContent = 'Week ranges have not been defined for this study year.';
+      updatePriorOptions();
       return;
     }
     const allWeeks = document.createElement('option');
     allWeeks.value = '';
     allWeeks.textContent = 'All weeks';
-    elements.weekSelect.replaceChildren(allWeeks, ...weeks.map((entry) => {
+    const options = weeks.map((entry) => {
       const option = document.createElement('option');
       option.value = entry.key;
       option.textContent = weekLabel(entry);
-      option.disabled = !entry.available;
+      option.disabled = !entry.available || !weekContainsChapter(entry, elements.chapterSelect.value);
       return option;
-    }));
+    });
+    const currentWeek = elements.weekSelect.value;
+    elements.weekSelect.replaceChildren(allWeeks, ...options);
+    if (currentWeek) {
+      const currentOption = options.find((option) => option.value === currentWeek);
+      elements.weekSelect.value = currentOption && !currentOption.disabled ? currentWeek : '';
+    }
     elements.weekSelect.disabled = false;
     const unavailableWeeks = weeks.filter((week) => !week.available);
     const notImplemented = unavailableWeeks.length
       ? ` Weeks ${unavailableWeeks.map((week) => week.week).join(', ')} are not implemented yet.`
       : '';
-    elements.weekHelp.textContent = `Choose a week to narrow the cards. The prior-material checkbox includes earlier weeks.${notImplemented}`;
+    elements.weekHelp.textContent = `Choose a week and/or chapter to narrow the cards. Earlier material can be included when using one filter alone.${notImplemented}`;
+    updatePriorOptions();
+  }
+
+  function updatePriorOptions() {
+    const chapterSelected = elements.chapterSelect.value !== 'all';
+    const weekSelected = Boolean(elements.weekSelect.value);
+    const showPriorChapters = chapterSelected && !weekSelected;
+    const showPriorWeeks = weekSelected && !chapterSelected;
+    elements.priorOptions.hidden = !showPriorChapters && !showPriorWeeks;
+    elements.priorChaptersOption.hidden = !showPriorChapters;
+    elements.priorWeeksOption.hidden = !showPriorWeeks;
+    if (!showPriorChapters) elements.includePriorChapters.checked = false;
+    if (!showPriorWeeks) elements.includePriorWeeks.checked = false;
   }
 
   function updateAvailableQuestions() {
@@ -302,7 +338,7 @@
       const availableChapters = [...new Set(questions
         .filter((question) => (selectedYear() === null || question.year === selectedYear())
           && question.book === book
-          && (!elements.includePrior.checked || question.chapter <= selectedChapter))
+          && (!elements.includePriorChapters.checked || question.chapter <= selectedChapter))
         .map((question) => question.chapter))]
         .sort((a, b) => a - b);
       const consecutive = availableChapters.every((value, index) => index === 0 || value === availableChapters[index - 1] + 1);
@@ -338,7 +374,8 @@
       year: elements.yearSelect.value,
       chapter: elements.chapterSelect.value,
       week: elements.weekSelect.value,
-      includePrior: elements.includePrior.checked,
+      includePriorChapters: elements.includePriorChapters.checked,
+      includePriorWeeks: elements.includePriorWeeks.checked,
       types: selectedTypes(),
       mode,
       goal,
@@ -566,7 +603,9 @@
     updateChapterOptions();
     elements.chapterSelect.value = 'all';
     elements.weekSelect.value = '';
-    elements.includePrior.checked = false;
+    elements.includePriorChapters.checked = false;
+    elements.includePriorWeeks.checked = false;
+    updateWeekOptions();
     document.querySelectorAll('input[name="type"]').forEach((input) => { input.checked = true; });
     document.querySelector('input[name="mode"][value="count"]').checked = true;
     setMode('count');
@@ -584,8 +623,11 @@
     elements.yearSelect.value = config.year;
     updateChapterOptions();
     elements.chapterSelect.value = config.chapter;
+    updateWeekOptions();
     elements.weekSelect.value = config.week;
-    elements.includePrior.checked = config.includePrior;
+    elements.includePriorChapters.checked = config.includePriorChapters;
+    elements.includePriorWeeks.checked = config.includePriorWeeks;
+    updatePriorOptions();
     document.querySelectorAll('input[name="type"]').forEach((input) => {
       input.checked = config.types.includes(input.value);
     });
@@ -720,9 +762,16 @@
 
   elements.setupForm.addEventListener('submit', startSession);
   elements.yearSelect.addEventListener('change', updateChapterOptions);
-  elements.chapterSelect.addEventListener('change', updateAvailableQuestions);
-  elements.weekSelect.addEventListener('change', updateAvailableQuestions);
-  elements.includePrior.addEventListener('change', updateAvailableQuestions);
+  elements.chapterSelect.addEventListener('change', () => {
+    updateWeekOptions();
+    updateAvailableQuestions();
+  });
+  elements.weekSelect.addEventListener('change', () => {
+    updatePriorOptions();
+    updateAvailableQuestions();
+  });
+  elements.includePriorChapters.addEventListener('change', updateAvailableQuestions);
+  elements.includePriorWeeks.addEventListener('change', updateAvailableQuestions);
   document.querySelectorAll('input[name="type"]').forEach((input) => input.addEventListener('change', updateAvailableQuestions));
   document.querySelectorAll('input[name="mode"]').forEach((input) => input.addEventListener('change', () => setMode(input.value)));
   elements.revealButton.addEventListener('click', revealAnswer);

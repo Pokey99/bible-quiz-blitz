@@ -228,6 +228,7 @@ h1, h2 {
 #year-select { font-size: 0.76rem; }
 .field select:disabled, .field input:disabled { color: #78827c; background: #f3f4f0; }
 .filter-grid { align-items: end; margin-top: 0.85rem; }
+.prior-options { display: grid; gap: 0.35rem; margin-top: 0.5rem; }
 .prior-option {
   min-height: 48px;
   display: flex;
