@@ -239,7 +239,20 @@ h1, h2 {
   font-weight: 600;
 }
 
-.prior-option input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.prior-option input,
+.check-card input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  -webkit-appearance: none;
+  appearance: none;
+  opacity: 0;
+}
 .prior-option .check-mark { flex: 0 0 19px; }
 .prior-option input:checked + .check-mark { border-color: var(--forest); background: var(--forest); }
 .prior-option input:checked + .check-mark::after {
@@ -281,8 +294,6 @@ h1, h2 {
 }
 
 .check-card:has(input:checked) { border-color: #9db8a2; background: #f1f6f1; }
-.check-card input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-
 .check-mark {
   width: 19px;
   height: 19px;
@@ -432,6 +443,52 @@ h1, h2 {
   .card-actions .button { min-height: 48px; }
   .card-actions .button-secondary { flex: 1 1 auto; }
   .site-footer { width: calc(100% - 1.5rem); }
+}
+
+@media (max-width: 700px) {
+  .keyboard-hint { display: none; }
+}
+
+@media (max-width: 700px) {
+  body.is-installed-pwa.is-fixed-practice-page {
+    display: flex;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body.is-installed-pwa.is-fixed-practice-page .site-header { flex: 0 0 68px; }
+
+  body.is-installed-pwa.is-fixed-practice-page main {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    align-items: stretch;
+    overflow: hidden;
+    padding-block: 0.4rem;
+  }
+
+  body.is-installed-pwa.is-fixed-practice-page .quiz-panel:not([hidden]),
+  body.is-installed-pwa.is-fixed-practice-page .result-panel:not([hidden]) {
+    display: flex;
+    width: 100%;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  body.is-installed-pwa.is-fixed-practice-page .flashcard {
+    width: 100%;
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  body.is-installed-pwa.is-fixed-practice-page .keyboard-hint,
+  body.is-installed-pwa.is-fixed-practice-page .site-footer { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,6 +1,6 @@
 # Bible Quiz Blitz
 
-A mobile-friendly Bible quiz flash-card PWA built with static HTML, CSS, and JavaScript. It can be hosted on GitHub Pages and does not require a backend. The interface uses a black, white, and sky-blue palette, with light, dark, and system appearance options.
+A mobile-friendly Bible quiz flash-card PWA built with static HTML, CSS, and JavaScript. It can be hosted on GitHub Pages and does not require a backend. The interface uses a black, white, and sky-blue palette, with light, dark, and system appearance options. The slogan is "Know God's word. Know God."
 
 On opening, the app starts a continuous shuffled session across all chapters in the newest available year. Use the vertical menu to change year, chapter/week filters, question types, session goal, or appearance, or to open practice history. The logo returns to the default continuous session.
 
@@ -38,7 +38,7 @@ The 2027 week ranges are:
 7. 2 Samuel 8–12
 8. 1 Kings 1:28–2
 
-Selecting a week filters questions by their chapter and verse headings. The prior-material checkbox includes the selected week and all earlier weeks. A week without any registered question files is shown as unavailable.
+Selecting a week filters questions by their chapter and verse headings. The prior-material checkbox includes the selected week and all earlier weeks. Weeks 4–8 are marked as not implemented until their chapter files are added.
 
 Each text file uses a book name, a `Chapter N` heading, verse headings such as `16:1`, and question/answer pairs:
 

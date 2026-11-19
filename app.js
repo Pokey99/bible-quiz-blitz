@@ -255,10 +255,10 @@
       const unavailable = document.createElement('option');
       unavailable.value = '';
       unavailable.disabled = true;
-      unavailable.textContent = 'Weeks not assigned yet';
+      unavailable.textContent = 'Weeks not defined for this year';
       elements.weekSelect.replaceChildren(unavailable);
       elements.weekSelect.disabled = true;
-      elements.weekHelp.textContent = 'Week ranges are currently defined for the 2027 Life of David study.';
+      elements.weekHelp.textContent = 'Week ranges have not been defined for this study year.';
       return;
     }
     const allWeeks = document.createElement('option');
@@ -272,7 +272,11 @@
       return option;
     }));
     elements.weekSelect.disabled = false;
-    elements.weekHelp.textContent = 'Choose a week to narrow the cards. Include all prior adds earlier weeks; weeks without question files are unavailable.';
+    const unavailableWeeks = weeks.filter((week) => !week.available);
+    const notImplemented = unavailableWeeks.length
+      ? ` Weeks ${unavailableWeeks.map((week) => week.week).join(', ')} are not implemented yet.`
+      : '';
+    elements.weekHelp.textContent = `Choose a week to narrow the cards. The prior-material checkbox includes earlier weeks.${notImplemented}`;
   }
 
   function updateAvailableQuestions() {
@@ -518,6 +522,7 @@
   function showPage(panelId) {
     [elements.setupPanel, elements.historyPanel, elements.quizPanel, elements.resultPanel]
       .forEach((panel) => { panel.hidden = panel.id !== panelId; });
+    document.body.classList.toggle('is-fixed-practice-page', panelId === 'quiz-panel' || panelId === 'result-panel');
   }
 
   function closeAppMenu() {
@@ -778,6 +783,10 @@
 
   let savedTheme = 'system';
   const systemColorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  const standaloneDisplay = window.matchMedia('(display-mode: standalone)');
+  if (standaloneDisplay.matches || window.navigator.standalone === true) {
+    document.body.classList.add('is-installed-pwa');
+  }
   try {
     savedTheme = localStorage.getItem(THEME_KEY) || 'system';
   } catch (error) {
