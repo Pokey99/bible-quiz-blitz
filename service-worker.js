@@ -1,10 +1,10 @@
-const CACHE_NAME = 'bible-quiz-blitz-v2';
+const CACHE_NAME = 'bible-quiz-blitz-v5';
 const APP_FILES = [
   './',
   './index.html',
   './quiz.css',
   './app.js',
-  './questions.json',
+  './question-files.json',
   './manifest.webmanifest',
   './icon.svg',
 ];

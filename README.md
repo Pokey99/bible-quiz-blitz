@@ -6,26 +6,53 @@ On opening, the app starts a continuous shuffled session across all chapters in 
 
 ## Current study material
 
-The 2027 Life of David set contains 303 question-and-answer cards from the supplied 1 Samuel 16 and 17 files. Each card keeps its year, book, chapter, verse, and question type (`regular`, `footnote`, or `situation`) in `questions.json`. The source files do not assign weeks or physical date ranges, so week selection remains unavailable until those dates are provided.
+The 2027 Life of David set contains 1 Samuel chapters 16–25, stored as one `.txt` file per chapter under `questions/2027/`. The eight study-week ranges are configured in the app. Weeks 1–3 overlap the currently supplied chapters; Weeks 4–8 will become available as their chapter files are added.
 
 ## GitHub Pages
 
-Publish the repository root with GitHub Pages. The app uses relative paths for its assets and service worker, so it works from a user or project Pages URL. HTTPS is required for service workers, and GitHub Pages provides it.
+Publish the repository root with GitHub Pages. The app uses relative paths for its assets and service worker, so it works from a user or project Pages URL. HTTPS is required for service workers, and GitHub Pages provides it. The app caches the registered chapter text files after loading them online, so they are available for later offline sessions.
 
 ## Adding study material
 
-Append cards to `questions.json` with the same fields:
+Add each chapter as a `.txt` file under that study year's folder, then add its path and study year to the `files` array in `question-files.json`:
 
 ```json
 {
-  "year": 2027,
-  "book": "1 Samuel",
-  "chapter": 16,
-  "verse": 1,
-  "type": "footnote",
-  "question": "Question text",
-  "answer": "Answer text"
+  "files": [
+    {
+      "path": "questions/2027/1Samuel26Questions.txt",
+      "year": 2027
+    }
+  ]
 }
 ```
 
-The year and chapter selectors are populated from the available questions in `questions.json`. Add each year/book/chapter/verse question with the same fields; chapter order follows the order of its first appearance in the data. When weekly material and dates are available, add a `week`, `weekStart` (ISO date), and optionally `weekEnd` to each card; the week selector will order and label those groups by date.
+The 2027 week ranges are:
+
+1. 1 Samuel 16–18
+2. 1 Samuel 19–22:10
+3. 1 Samuel 22:11–25
+4. 1 Samuel 26–30
+5. 1 Samuel 31–2 Samuel 3:25
+6. 2 Samuel 3:26–7
+7. 2 Samuel 8–12
+8. 1 Kings 1:28–2
+
+Selecting a week filters questions by their chapter and verse headings. The prior-material checkbox includes the selected week and all earlier weeks. A week without any registered question files is shown as unavailable.
+
+Each text file uses a book name, a `Chapter N` heading, verse headings such as `16:1`, and question/answer pairs:
+
+```text
+1 Samuel
+Chapter 16
+
+16:1
+SitQ. Who to whom, “How long will you grieve over Saul?”
+A. God to Samuel.
+FQ. What can youngest also mean?
+A. smallest
+Q. Who has God rejected from being king over Israel?
+A. Saul
+```
+
+Use `Q.` for regular questions, `FQ.` for footnote questions, and `SitQ.` for situation questions. Chapter and verse headings supply the ESV reference; the `year` in the registry controls which study year contains the file. The selectors are populated from the registered text files. GitHub Pages does not provide directory listing, so every added chapter file must be registered in `question-files.json`. For example, add new 2027 chapters to `questions/2027/` and use paths like `questions/2027/1Samuel26Questions.txt`.
