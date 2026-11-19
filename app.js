@@ -9,6 +9,20 @@
   ];
   const THEME_KEY = 'bible-quiz-blitz-theme-v1';
   const UPCOMING_YEARS = [{ year: 2026, label: '2026 · Acts (coming soon)' }];
+  const STUDY_WEEKS = [{
+    year: 2027,
+    entries: [
+      { week: 1, label: '1 Samuel 16–18', start: ['1 Samuel', 16, 1], end: ['1 Samuel', 18, Infinity] },
+      { week: 2, label: '1 Samuel 19–22:10', start: ['1 Samuel', 19, 1], end: ['1 Samuel', 22, 10] },
+      { week: 3, label: '1 Samuel 22:11–25', start: ['1 Samuel', 22, 11], end: ['1 Samuel', 25, Infinity] },
+      { week: 4, label: '1 Samuel 26–30', start: ['1 Samuel', 26, 1], end: ['1 Samuel', 30, Infinity] },
+      { week: 5, label: '1 Samuel 31–2 Samuel 3:25', start: ['1 Samuel', 31, 1], end: ['2 Samuel', 3, 25] },
+      { week: 6, label: '2 Samuel 3:26–7', start: ['2 Samuel', 3, 26], end: ['2 Samuel', 7, Infinity] },
+      { week: 7, label: '2 Samuel 8–12', start: ['2 Samuel', 8, 1], end: ['2 Samuel', 12, Infinity] },
+      { week: 8, label: '1 Kings 1:28–2', start: ['1 Kings', 1, 28], end: ['1 Kings', 2, Infinity] },
+    ],
+  }];
+  const BOOK_ORDER = new Map([['1 Samuel', 1], ['2 Samuel', 2], ['1 Kings', 3]]);
   const elements = {
     setupPanel: document.getElementById('setup-panel'),
     historyPanel: document.getElementById('history-panel'),
@@ -119,38 +133,40 @@
       .map((question) => `${question.book}:${question.chapter}`))];
   }
 
+  function canonicalBook(book) {
+    const normalized = book.trim().replace(/\s+/g, ' ');
+    return normalized
+      .replace(/^I\s+Samuel$/i, '1 Samuel')
+      .replace(/^II\s+Samuel$/i, '2 Samuel')
+      .replace(/^I\s+Kings$/i, '1 Kings');
+  }
+
+  function compareReferences(left, right) {
+    const bookDifference = (BOOK_ORDER.get(canonicalBook(left[0])) || 0)
+      - (BOOK_ORDER.get(canonicalBook(right[0])) || 0);
+    if (bookDifference) return bookDifference;
+    return left[1] - right[1] || left[2] - right[2];
+  }
+
+  function questionInWeek(question, week) {
+    const reference = [question.book, question.chapter, question.verse];
+    return compareReferences(reference, week.start) >= 0
+      && compareReferences(reference, week.end) <= 0;
+  }
+
   function weekEntries(year) {
-    const entries = new Map();
-    questions.forEach((question) => {
-      if (year !== null && question.year !== year) return;
-      if (question.week === undefined || question.week === null || question.week === '') return;
-      const key = `${question.year}:${question.week}`;
-      if (!entries.has(key)) {
-        entries.set(key, {
-          key,
-          year: question.year,
-          week: question.week,
-          start: question.weekStart || '',
-          end: question.weekEnd || '',
-        });
-      } else {
-        const entry = entries.get(key);
-        if (question.weekStart && (!entry.start || question.weekStart < entry.start)) entry.start = question.weekStart;
-        if (question.weekEnd && (!entry.end || question.weekEnd > entry.end)) entry.end = question.weekEnd;
-      }
-    });
-    return [...entries.values()].sort((a, b) => {
-      if (a.start && b.start) return a.start.localeCompare(b.start);
-      if (a.year !== b.year) return a.year - b.year;
-      return String(a.week).localeCompare(String(b.week), undefined, { numeric: true });
-    });
+    return STUDY_WEEKS
+      .filter((study) => year === null || study.year === year)
+      .flatMap((study) => study.entries.map((entry) => ({
+        ...entry,
+        year: study.year,
+        key: `${study.year}:${entry.week}`,
+        available: questions.some((question) => question.year === study.year && questionInWeek(question, entry)),
+      })));
   }
 
   function weekLabel(entry) {
-    const dateRange = entry.start && entry.end
-      ? `${entry.start} – ${entry.end}`
-      : entry.start || entry.end;
-    return `${entry.year} · Week ${entry.week}${dateRange ? ` · ${dateRange}` : ''}`;
+    return `${entry.year} · Week ${entry.week} · ${entry.label}${entry.available ? '' : ' (questions not added yet)'}`;
   }
 
   function selectedQuestions() {
@@ -170,9 +186,9 @@
     }
     const weeks = weekEntries(year);
     const selectedWeekIndex = weeks.findIndex((entry) => entry.key === selectedWeek);
-    const includedWeeks = new Set(selectedWeekIndex >= 0 && prior
-      ? weeks.slice(0, selectedWeekIndex + 1).map((entry) => entry.key)
-      : selectedWeek ? [selectedWeek] : []);
+    const includedWeeks = selectedWeekIndex >= 0
+      ? (prior ? weeks.slice(0, selectedWeekIndex + 1) : [weeks[selectedWeekIndex]])
+      : [];
 
     return questions.filter((question) => {
       if ((year !== null && question.year !== year) || !types.includes(question.type)) return false;
@@ -183,7 +199,9 @@
           : new Set([chapterKey]);
         if (!allowed || !allowed.has(questionChapterKey)) return false;
       }
-      if (selectedWeek && !includedWeeks.has(`${question.year}:${question.week}`)) return false;
+      if (selectedWeek && !includedWeeks.some((week) => (
+        question.year === week.year && questionInWeek(question, week)
+      ))) return false;
       return true;
     });
   }
@@ -240,7 +258,7 @@
       unavailable.textContent = 'Weeks not assigned yet';
       elements.weekSelect.replaceChildren(unavailable);
       elements.weekSelect.disabled = true;
-      elements.weekHelp.textContent = 'Week dates are not present in the supplied files yet.';
+      elements.weekHelp.textContent = 'Week ranges are currently defined for the 2027 Life of David study.';
       return;
     }
     const allWeeks = document.createElement('option');
@@ -250,10 +268,11 @@
       const option = document.createElement('option');
       option.value = entry.key;
       option.textContent = weekLabel(entry);
+      option.disabled = !entry.available;
       return option;
     }));
     elements.weekSelect.disabled = false;
-    elements.weekHelp.textContent = 'Choose a week to narrow the cards. The prior-material checkbox includes earlier dated weeks.';
+    elements.weekHelp.textContent = 'Choose a week to narrow the cards. Include all prior adds earlier weeks; weeks without question files are unavailable.';
   }
 
   function updateAvailableQuestions() {
@@ -573,12 +592,115 @@
     startSession(null);
   }
 
+  function parseQuestionFile(text, source, year) {
+    const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+    const records = [];
+    let book = '';
+    let chapter = null;
+    let verse = null;
+    let pending = null;
+    const fail = (lineNumber, message) => {
+      throw new Error(`${source}:${lineNumber}: ${message}`);
+    };
+
+    lines.forEach((rawLine, index) => {
+      const lineNumber = index + 1;
+      const line = rawLine.trim();
+      if (!line) return;
+
+      const chapterMatch = line.match(/^Chapter\s+(\d+)$/i);
+      if (chapterMatch) {
+        if (pending) fail(lineNumber, 'question is missing its A. answer line');
+        const bookLine = lines.slice(0, index).reverse()
+          .map((candidate) => candidate.trim())
+          .find((candidate) => candidate && !/^MANUAL REVIEW:/i.test(candidate));
+        if (!bookLine) fail(lineNumber, 'could not find the book name before the chapter heading');
+        book = bookLine;
+        chapter = Number(chapterMatch[1]);
+        verse = null;
+        return;
+      }
+
+      const verseMatch = line.match(/^(\d+):(\d+)$/);
+      if (verseMatch) {
+        if (pending) fail(lineNumber, 'question is missing its A. answer line');
+        if (chapter === null) fail(lineNumber, 'verse appears before a Chapter heading');
+        if (Number(verseMatch[1]) !== chapter) {
+          fail(lineNumber, `verse chapter ${verseMatch[1]} does not match Chapter ${chapter}`);
+        }
+        verse = Number(verseMatch[2]);
+        return;
+      }
+
+      const questionMatch = line.match(/^(Q|FQ|SitQ)\.\s*(.+)$/);
+      if (questionMatch) {
+        if (pending) fail(lineNumber, 'question is missing its A. answer line');
+        if (!book || chapter === null || verse === null) {
+          fail(lineNumber, 'question appears before its book, chapter, or verse heading');
+        }
+        pending = {
+          year,
+          book,
+          chapter,
+          verse,
+          type: { Q: 'regular', FQ: 'footnote', SitQ: 'situation' }[questionMatch[1]],
+          question: questionMatch[2].trim(),
+          lineNumber,
+        };
+        return;
+      }
+
+      const answerMatch = line.match(/^A\.\s*(.*)$/);
+      if (answerMatch) {
+        if (!pending) fail(lineNumber, 'answer appears without a preceding Q., FQ., or SitQ. line');
+        const record = { ...pending, answer: answerMatch[1].trim() };
+        delete record.lineNumber;
+        records.push(record);
+        pending = null;
+        return;
+      }
+
+      if (pending) {
+        pending.question += ` ${line}`;
+        return;
+      }
+      if (verse !== null) fail(lineNumber, 'unrecognized content inside the question list');
+    });
+
+    if (pending) fail(pending.lineNumber, 'question is missing its A. answer line');
+    if (!records.length) throw new Error(`${source}: no question-and-answer pairs were found`);
+    return records;
+  }
+
   async function loadQuestions() {
     try {
-      const response = await fetch('./questions.json');
-      if (!response.ok) throw new Error(`Question data request failed with status ${response.status}`);
-      questions = await response.json();
-      if (!Array.isArray(questions) || !questions.length) throw new Error('Question data is empty or invalid');
+      const manifestResponse = await fetch('./question-files.json');
+      if (!manifestResponse.ok) {
+        throw new Error(`Question file list request failed with status ${manifestResponse.status}`);
+      }
+      const manifest = await manifestResponse.json();
+      if (!manifest || !Array.isArray(manifest.files) || manifest.files.length === 0) {
+        throw new Error('Question file list is empty or invalid');
+      }
+
+      const filePaths = new Set();
+      const questionSets = await Promise.all(manifest.files.map(async (file) => {
+        if (!file || typeof file.path !== 'string'
+          || !file.path.startsWith('questions/')
+          || file.path.split('/').includes('..')
+          || !file.path.toLowerCase().endsWith('.txt')
+          || !Number.isInteger(file.year)
+          || file.year < 1) {
+          throw new Error('Question file list contains an invalid .txt file entry');
+        }
+        if (filePaths.has(file.path)) throw new Error(`Question file list contains duplicate path ${file.path}`);
+        filePaths.add(file.path);
+        const response = await fetch(`./${file.path}`);
+        if (!response.ok) throw new Error(`${file.path} request failed with status ${response.status}`);
+        return parseQuestionFile(await response.text(), file.path, file.year);
+      }));
+      questions = questionSets.flat();
+      if (!questions.length) throw new Error('No questions were found in the registered .txt files');
       populateYears();
       updateChapterOptions();
       renderHistory();
@@ -663,7 +785,7 @@
   }
   setTheme(savedTheme, false);
   const updateSystemTheme = () => {
-    if (elements.themeSelect.value === 'system') setTheme('system', false);
+    if (document.documentElement.dataset.theme === undefined) setTheme('system', false);
   };
   if (systemColorScheme.addEventListener) systemColorScheme.addEventListener('change', updateSystemTheme);
   else systemColorScheme.addListener(updateSystemTheme);
